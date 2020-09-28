@@ -9,8 +9,8 @@ jobs:
       - run: npm install
       - run: npm test
   test:
-    executor: node-lts
-    resource_class: xlarge
+    docker:
+      - image: "mileschou/xdebug:7.3"
     steps:
       - checkout
       - restore_modules
