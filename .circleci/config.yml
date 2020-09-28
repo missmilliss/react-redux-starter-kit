@@ -1,55 +1,18 @@
-version: 2.0
-# jobs:
-#   build:
-#     environment:
-#       CC_TEST_REPORTER_ID: 02cc8a8e2d7f30ee591a99f6c905155654b0acfeec52ae8ea141a4849c96c265
-#     docker:
-#       - image: circleci/node
-#     working_directory: ~/react-redux-starter-kit
-#     steps:
-#       - checkout
-#       - run:
-#           name: Setup dependencies
-#           command: |
-#             sudo composer self-update
-#             composer install -n --prefer-dist
-#       - run:
-#           name: Setup Code Climate test-reporter
-#           command: |
-#           # download test reporter as a static binary
-#             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-#             chmod +x ./cc-test-reporter
-#       - run:
-#           name: Run tests
-#           command: |
-#             sudo docker-php-ext-enable xdebug
-#             ./cc-test-reporter before-build
-#             sudo vendor/bin/phpunit --coverage-clover clover.xml
-#             ./cc-test-reporter after-build --coverage-input-type clover --exit-code $?
-
-
-# Jobs
+version: 2
 jobs:
-  setup_node:
-    executor: node-lts
-    steps:
-      - checkout
-      - log_to_datadog:
-          build_status: info
-      - restore_modules
-      - setup_npmrc
-      - run: yarn install --frozen-lockfile
-      - save_cache:
-          name: Saving Cache [ node modules ]
-          key: yarn-cache-{{ checksum "yarn.lock" }}
-          paths:
-            - ./node_modules
-      - log_to_datadog:
-          build_status: error
-          condition: on_fail
-  test:
+  build:
     environment:
         CC_TEST_REPORTER_ID: 02cc8a8e2d7f30ee591a99f6c905155654b0acfeec52ae8ea141a4849c96c265
+    working_directory: ~/tmp
+    docker:
+      - image: circleci/node:7
+    steps:
+      - checkout
+      - run: npm install
+      - run: npm test
+  test:
+    environment:
+          CC_TEST_REPORTER_ID: 02cc8a8e2d7f30ee591a99f6c905155654b0acfeec52ae8ea141a4849c96c265
     executor: node-lts
     resource_class: xlarge
     steps:
@@ -59,16 +22,12 @@ jobs:
           name: Setup Code Climate test-reporter
           command: |
             # download test reporter as a static binary
-              curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-              chmod +x ./cc-test-reporter
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
       - run:
-          name: Run unit tests
+          name: Run tests
           command: |
+            sudo docker-php-ext-enable xdebug
             ./cc-test-reporter before-build
-            yarn test --maxWorkers=8 --collectCoverage
-            ./cc-test-reporter format-coverage -t lcov -o coverage/unit/coverage-final.json coverage/unit/lcov.info
-            ./cc-test-reporter upload-coverage -i coverage/unit/coverage-final.json
-      - slack_notification
-      - log_to_datadog:
-          build_status: error
-          condition: on_fail
+            sudo vendor/bin/phpunit --coverage-clover clover.xml
+            ./cc-test-reporter after-build --coverage-input-type clover --exit-code $?
