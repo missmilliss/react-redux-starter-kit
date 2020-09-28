@@ -12,15 +12,15 @@ jobs:
     executor: node-lts
     resource_class: xlarge
     steps:
-      -checkout
-      -restore_modules
-    -run:
-      name: Setup Code Climate test-reporter
-      command: |
-          # download test reporter as a static binary
+      - checkout
+      - restore_modules
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+            # download test reporter as a static binary
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
-    -run:
+      - run:
           name: Run tests
           command: |
             sudo docker-php-ext-enable xdebug
