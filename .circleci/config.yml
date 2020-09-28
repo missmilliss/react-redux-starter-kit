@@ -4,8 +4,8 @@ jobs:
     environment:
       CC_TEST_REPORTER_ID: 02cc8a8e2d7f30ee591a99f6c905155654b0acfeec52ae8ea141a4849c96c265
     docker:
-      - image: "mileschou/xdebug:7.3"
-    working_directory: ~/react-redux-starter-kit
+      - image: circleci/node:12.16.1
+    working_directory: ~/missmilliss/react-redux-starter-kit
     steps:
       - checkout
       - run:
@@ -26,3 +26,21 @@ jobs:
             ./cc-test-reporter before-build
             sudo vendor/bin/phpunit --coverage-clover clover.xml
             ./cc-test-reporter after-build --coverage-input-type clover --exit-code $?
+  upload-coverage:
+    docker:
+      - image: circleci/node:12.16.1
+    environment:
+      CC_TEST_REPORTER_ID: 02cc8a8e2d7f30ee591a99f6c905155654b0acfeec52ae8ea141a4849c96c265
+    working_directory: ~/missmilliss/react-redux-starter-kit
+
+    steps:
+      - attach_workspace:
+          at: ~/missmilliss/react-redux-starter-kit
+      - run:
+          name: Install Code Climate Test Reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+      - run:
+          command: |
+            ./cc-test-reporter sum-coverage --output - codeclimate.*.json | ./cc-test-reporter upload-coverage --debug --input -
