@@ -5,7 +5,7 @@ jobs:
       CC_TEST_REPORTER_ID: 02cc8a8e2d7f30ee591a99f6c905155654b0acfeec52ae8ea141a4849c96c265
     docker:
       - image: "mileschou/xdebug:7.3"
-    working_directory: ~/repo
+    working_directory: ~/react-redux-starter-kit
     steps:
       - checkout
       - run:
