@@ -51,17 +51,3 @@ jobs:
             yarn test --maxWorkers=8 --collectCoverage
             ./cc-test-reporter format-coverage -t lcov -o coverage/unit/coverage-final.json coverage/unit/lcov.info
             ./cc-test-reporter upload-coverage -i coverage/unit/coverage-final.json
-
-  upload-coverage:
-    executor: node-lts
-    steps:
-      - attach_workspace:
-          at:  ~/react-redux-starter-kit
-      - run:
-          name: Install Code Climate Test Reporter
-          command: |
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            chmod +x ./cc-test-reporter
-      - run:
-          command: |
-            ./cc-test-reporter sum-coverage --output - codeclimate.*.json | ./cc-test-reporter upload-coverage --debug --input -
