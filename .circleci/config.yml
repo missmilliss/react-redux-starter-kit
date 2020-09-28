@@ -47,7 +47,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            sudo docker-php-ext-enable xdebug
             ./cc-test-reporter before-build
-            sudo vendor/bin/phpunit --coverage-clover clover.xml
-            ./cc-test-reporter after-build --coverage-input-type clover --exit-code $?
+            yarn test --maxWorkers=8 --collectCoverage
+            ./cc-test-reporter format-coverage -t lcov -o coverage/unit/coverage-final.json coverage/unit/lcov.info
+            ./cc-test-reporter upload-coverage -i coverage/unit/coverage-final.json
