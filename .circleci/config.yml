@@ -10,6 +10,23 @@ jobs:
       - checkout
       - run: npm install
       - run: npm test
+  setup_node:
+    executor: node-lts
+    steps:
+      - checkout
+      - log_to_datadog:
+          build_status: info
+      - restore_modules
+      - setup_npmrc
+      - run: yarn install --frozen-lockfile
+      - save_cache:
+          name: Saving Cache [ node modules ]
+          key: yarn-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - log_to_datadog:
+          build_status: error
+          condition: on_fail
   test:
     environment:
           CC_TEST_REPORTER_ID: 02cc8a8e2d7f30ee591a99f6c905155654b0acfeec52ae8ea141a4849c96c265
