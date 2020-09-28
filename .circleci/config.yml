@@ -8,6 +8,13 @@ executors:
     environment:
         CC_TEST_REPORTER_ID: 02cc8a8e2d7f30ee591a99f6c905155654b0acfeec52ae8ea141a4849c96c265
 
+commands:
+  restore_modules:
+    steps:
+      - restore_cache:
+          name: Restore Cache [ node modules ]
+          key: yarn-cache-{{ checksum "yarn-lock" }}
+
 jobs:
   build:
     executor: node-lts
@@ -15,29 +22,6 @@ jobs:
       - checkout
       - run: npm install
       - run: npm test
-  setup_node:
-    executor: node-lts
-    steps:
-      - checkout
-      - log_to_datadog:
-          build_status: info
-      - restore_modules
-      - setup_npmrc
-      - run: yarn install --frozen-lockfile
-      - save_cache:
-          name: Saving Cache [ node modules ]
-          key: yarn-cache-{{ checksum "yarn.lock" }}
-          paths:
-            - ./node_modules
-      - log_to_datadog:
-          build_status: error
-          condition: on_fail
-  test:
-    executor: node-lts
-    resource_class: xlarge
-    steps:
-      - checkout
-      - restore_modules
       - run:
           name: Setup Code Climate test-reporter
           command: |
@@ -51,3 +35,39 @@ jobs:
             yarn test --maxWorkers=8 --collectCoverage
             ./cc-test-reporter format-coverage -t lcov -o coverage/unit/coverage-final.json coverage/unit/lcov.info
             ./cc-test-reporter upload-coverage -i coverage/unit/coverage-final.json
+  # setup_node:
+  #   executor: node-lts
+  #   steps:
+  #     - checkout
+  #     - log_to_datadog:
+  #         build_status: info
+  #     - restore_modules
+  #     - setup_npmrc
+  #     - run: yarn install --frozen-lockfile
+  #     - save_cache:
+  #         name: Saving Cache [ node modules ]
+  #         key: yarn-cache-{{ checksum "yarn.lock" }}
+  #         paths:
+  #           - ./node_modules
+  #     - log_to_datadog:
+  #         build_status: error
+  #         condition: on_fail
+  # test:
+  #   executor: node-lts
+  #   resource_class: xlarge
+  #   steps:
+  #     - checkout
+  #     - restore_modules
+  #     - run:
+  #         name: Setup Code Climate test-reporter
+  #         command: |
+  #           # download test reporter as a static binary
+  #           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  #           chmod +x ./cc-test-reporter
+  #     - run:
+  #         name: Run tests
+  #         command: |
+  #           ./cc-test-reporter before-build
+  #           yarn test --maxWorkers=8 --collectCoverage
+  #           ./cc-test-reporter format-coverage -t lcov -o coverage/unit/coverage-final.json coverage/unit/lcov.info
+  #           ./cc-test-reporter upload-coverage -i coverage/unit/coverage-final.json
